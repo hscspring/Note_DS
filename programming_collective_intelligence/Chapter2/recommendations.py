@@ -69,5 +69,15 @@ def sim_pearson(prefs, p1, p2):
 	r = num/den
 	return r
 
+# return the best match persons in the prefer dict
+# return number and the similarity function are optional parameters
+def topMatches(prefs, person, n=5, similarity=sim_pearson):
+    scores=[(similarity(prefs, person, other), other)
+                   for other in prefs if other != person]
+# sort the list from high to low
+    scores.sort()
+    scores.reverse()
+    return scores[0:n]
+
 
 
