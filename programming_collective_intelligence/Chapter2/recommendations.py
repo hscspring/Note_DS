@@ -118,5 +118,50 @@ def transformPrefs(prefs):
 			result[item][person] = prefs[person][item]
 	return result
 
+def calculateSimilarItems(prefs, n=10):
+    
+    # create dict, to present the nearest goods of these goods
+    result = {}
+    
+    # tansform the pref by center of goods
+    itemPrefs = transformPrefs(prefs)
+    c = 0
+    for item in itemPrefs:
+        # for big data, update status variable
+        c += 1
+        if c%100 == 0:
+            print "%d / %d" % (c, len(itemPrefs))
+        # find the nearest goods
+        scores = topMatches(itemPrefs, item, n=n, similarity=sim_distance)
+        result[item] = scores
+    return result
 
-
+def getRecommendedItems(prefs, itemMatch, user):
+    userRatings = prefs[user]
+    scores = {}
+    totalSim = {}
+    
+    # loop goods of current user ever evaluated
+    for (item, rating) in userRatings.items():
+        
+        # loop the nearest goods of current goods
+        for (similarity, item2) in itemMatch[item]:
+            
+            # if user evaluated current good, ignore
+            if item2 in userRatings: continue
+                
+            # sum score * similarity by weighted
+            scores.setdefault(item2, 0)
+            scores[item2] += similarity*rating
+                
+            # sum of all the similarities
+            totalSim.setdefault(item2, 0)
+            totalSim[item2] += similarity
+            
+    # average
+    rankings = [(score/totalSim[item], item) for item, score in scores.items()]
+            
+    # sort
+    rankings.sort()
+    rankings.reverse()
+    return rankings
